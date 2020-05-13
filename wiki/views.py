@@ -4,6 +4,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView
 
 from wiki.models import Page
+from .forms import PageForm
 
 
 class PageListView(ListView):
@@ -32,4 +33,30 @@ class CreateWikiView(CreateView):
   model = Page
 
   def get(self, request):
-    pass
+    """ Returns a specific wiki page by slug. """
+    form = PageForm()
+
+    return render(request, 'new.html', {
+      'form': form
+    })
+
+  def post(self, request):
+    if request.method == "POST":
+      form = PageForm(request.POST)
+      
+      if form.is_valid():
+              
+        wiki = form.save(commit=False)
+        wiki.author = request.user
+        wiki.save()
+
+        return render(request, 'page.html', {'page': wiki})
+
+    else:
+      form = PageForm()
+
+    context = {'form': form}
+
+    return render(request, 'new.html', context)
+
+  
